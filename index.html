@@ -459,12 +459,12 @@
           for (x=1; x < totalMarkers+1; x++){
             console.log("Marker " + x);
             database.ref('paths/path' + pathNum + "/marker" + x + "/pos/lat").once('value').then(function(snapshot) {
-              rLat[x] = (snapshot.val());
-              console.log("Lat: " + rLat[x]);
+              rLat.push(snapshot.val());
+              //console.log("Lat: " + rLat[x]);
             });
             database.ref('paths/path' + pathNum + "/marker" + x + "/pos/lng").once('value').then(function(snapshot) {
-              rLng[x] = (snapshot.val());
-              console.log("Lng: " + rLng[x]);
+              rLng.push(snapshot.val());
+              //console.log("Lng: " + rLng[x]);
             });
           }
 
@@ -473,16 +473,24 @@
 
 
     setTimeout(function(){
-    //   for (x=0; x < totalMarkers+1; x++){
-    //     loadedTrack[x] = {lat: rLat[x+1], lng: rLng[x+1]};
-    //   }
-    //   console.log(loadedTrack);
-         console.log("Total Lng: " + rLng);
+      console.log("Total Lat: " + rLat);
+      console.log("Total Lng: " + rLng);
+      for (x=0; x < totalMarkers; x++){
+        loadedTrack[x] = {lat: rLat[x], lng: rLng[x]};
+      }
+      console.log(loadedTrack);
+
+      var displayLoadedTrack = new google.maps.Polyline({
+        path: loadedTrack,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+      });
+
     }, 1500);
 
 
-
-      // firebase_node.once('value', function(snapshot) { alert('Count: ' + snapshot.numChildren()); });
 
   }
 
