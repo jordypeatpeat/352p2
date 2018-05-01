@@ -4,6 +4,8 @@
     <title>Geolocation</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+<!-- IMPORT FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <!-- <script type="text/javascript" src= "mapScript.js"></script> -->
     <link rel="stylesheet" type="text/css" href="styles.css">
@@ -12,15 +14,19 @@
   <body>
 
     <button id="geo"><h1> Geolocate </h1></button>
+    Path Number: <input type="text" id="pathNum">
     <div id="map"></div>
+
+
+    
+
+ <!-- ******  MAP ****** -->
     <script>
-      // Note: This example requires that you consent to location sharing when
-      // prompted by your browser. If you see the error "The Geolocation service
-      // failed.", it means you probably did not give permission for the browser to
-      // locate you.
       var map; 
       var infoWindow;
       var poly;
+      var trackline;
+      var i = 0;
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: new google.maps.LatLng(-41.295077, 174.775808),
@@ -290,6 +296,7 @@
 
 //Handles click events on a map, and adds a new point to the Polyline.
       function addLatLng(event) {
+        i = i+1;
         var path = poly.getPath();
 
         // Because path is an MVCArray, we can simply append a new coordinate
@@ -306,6 +313,14 @@
             scale: 0
           }
         });
+        
+        // GETTING PATH NUMBER AND WRITING TO FIREBASE
+        var pathNum = document.getElementById("pathNum").value;
+        if (pathNum != null){
+          WriteClickData(pathNum, i, marker.getPosition().lat(), marker.getPosition().lng())
+          console.log(i);
+        } 
+
 
         console.log(marker.getPosition().lng());
         console.log(marker.getPosition().lat());
@@ -313,7 +328,21 @@
 
 // ****************  ******************  ****************** 
 
-
+// ****************  HARDCODED POLYLINE  ******************
+        // var flightPlanCoordinates = [
+        //   {lat: 37.772, lng: -122.214},
+        //   {lat: 21.291, lng: -157.821},
+        //   {lat: -18.142, lng: 178.431},
+        //   {lat: -27.467, lng: 153.027}
+        // ];
+        // var flightPath = new google.maps.Polyline({
+        //   path: flightPlanCoordinates,
+        //   geodesic: true,
+        //   strokeColor: '#FF0000',
+        //   strokeOpacity: 1.0,
+        //   strokeWeight: 2
+        // });
+// ****************  ******************  ****************** 
 
 
       function GeolocationControl(controlDiv, map) {
@@ -363,6 +392,47 @@
 
       
       }
+
+      
+// **********************. FIREBASE .*************************
+
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyCDP3vPhEuXOUvmiT6Bt9q9SSNXDCtEGDY",
+        authDomain: "tracker-8805c.firebaseapp.com",
+        databaseURL: "https://tracker-8805c.firebaseio.com",
+        projectId: "tracker-8805c",
+        storageBucket: "tracker-8805c.appspot.com",
+        messagingSenderId: "562533601691"
+      };
+      
+  firebase.initializeApp(config);
+  console.log(firebase);
+
+  var database = firebase.database();
+
+  
+  function WriteClickData(pathNum, markerNum, lat, lng) {
+    database.ref('paths/path' + pathNum + '/marker' + markerNum + '/pos').set({
+      lat: lat,
+      lng: lng
+    });
+  }
+
+// **********************. ******** .*************************
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 
     </script>
