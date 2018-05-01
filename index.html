@@ -14,7 +14,9 @@
   <body>
 
     <button id="geo"><h1> Geolocate </h1></button>
-    Path Number: <input type="text" id="pathNum">
+    Track Number: <input type="text" id="pathNum">
+    <button id="submit" onclick="EndTrackData();"> end track </button>
+    <button id="submit" onclick="RetrieveTrack();"> load track </button>
     <div id="map"></div>
 
 
@@ -27,6 +29,8 @@
       var poly;
       var trackline;
       var i = 0;
+
+
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: new google.maps.LatLng(-41.295077, 174.775808),
@@ -316,6 +320,7 @@
         
         // GETTING PATH NUMBER AND WRITING TO FIREBASE
         var pathNum = document.getElementById("pathNum").value;
+        console.log("Path Number: " + pathNum);
         if (pathNum != null){
           WriteClickData(pathNum, i, marker.getPosition().lat(), marker.getPosition().lng())
           console.log(i);
@@ -351,8 +356,6 @@
       // Setup the click event listeners to geolocate user
       google.maps.event.addDomListener(controlUI, 'click', geolocate);
       }
-
-
 
       function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         infoWindow.setPosition(pos);
@@ -406,18 +409,73 @@
         messagingSenderId: "562533601691"
       };
       
-  firebase.initializeApp(config);
-  console.log(firebase);
+      firebase.initializeApp(config);
+      console.log(firebase);
 
-  var database = firebase.database();
+      var database = firebase.database();
 
-  
-  function WriteClickData(pathNum, markerNum, lat, lng) {
-    database.ref('paths/path' + pathNum + '/marker' + markerNum + '/pos').set({
-      lat: lat,
-      lng: lng
+      
+      function WriteClickData(pathNum, markerNum, lat, lng) {
+        database.ref('paths/path' + pathNum + '/marker' + markerNum + '/pos').set({
+          lat: lat,
+          lng: lng
+        });
+      }
+
+      function EndTrackData() {
+        var pathNum = document.getElementById("pathNum").value;
+        var totalMarkers = 0;
+        //console.log("Path Number: " + pathNum);
+
+        if (pathNum != null){
+          database.ref('paths/path' + pathNum + "/total").set({
+            total: i
+          });
+          i = 0;
+          //console.log(i);
+          console.log(totalMarkers);
+        } 
+      }
+
+
+  function RetrieveTrack() {
+
+    var pathNum = document.getElementById("pathNum").value;
+    var totalMarkers;
+    var x;
+    var rLat = [];
+    var rLng = [];
+
+    database.ref('paths/path' + pathNum + "/total/total").once('value').then(function(snapshot) {
+        totalMarkers = (snapshot.val());
+        console.log("Total markers retrieved: " + totalMarkers);
     });
+    
+    setTimeout(function(){
+          for (x=1; x < totalMarkers+1; x++){
+            console.log("Marker " + x);
+            database.ref('paths/path' + pathNum + "/marker" + x + "/pos/lat").once('value').then(function(snapshot) {
+              rLat[x] = (snapshot.val());
+              console.log("Lat: " + rLat[x]);
+            });
+            database.ref('paths/path' + pathNum + "/marker" + x + "/pos/lng").once('value').then(function(snapshot) {
+              rLng[x] = (snapshot.val());
+              console.log("Lng: " + rLng[x]);
+            });
+          }
+    }, 1000);
+
+
+
+
+
+
+      // firebase_node.once('value', function(snapshot) { alert('Count: ' + snapshot.numChildren()); });
+
   }
+
+
+  // https://stackoverflow.com/questions/15148803/in-firebase-is-there-a-way-to-get-the-number-of-children-of-a-node-without-load
 
 // **********************. ******** .*************************
 
