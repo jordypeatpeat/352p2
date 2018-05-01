@@ -445,13 +445,17 @@
     var x;
     var rLat = [];
     var rLng = [];
+    var loadedTrack = [];
 
+    // Grab the total amount of markers for that path
     database.ref('paths/path' + pathNum + "/total/total").once('value').then(function(snapshot) {
         totalMarkers = (snapshot.val());
         console.log("Total markers retrieved: " + totalMarkers);
     });
     
+    // Little delay so that the above info can be ready for this
     setTimeout(function(){
+          // Append each marker's lat and lng to their arrays
           for (x=1; x < totalMarkers+1; x++){
             console.log("Marker " + x);
             database.ref('paths/path' + pathNum + "/marker" + x + "/pos/lat").once('value').then(function(snapshot) {
@@ -463,10 +467,18 @@
               console.log("Lng: " + rLng[x]);
             });
           }
+
     }, 1000);
 
 
 
+    setTimeout(function(){
+    //   for (x=0; x < totalMarkers+1; x++){
+    //     loadedTrack[x] = {lat: rLat[x+1], lng: rLng[x+1]};
+    //   }
+    //   console.log(loadedTrack);
+         console.log("Total Lng: " + rLng);
+    }, 1500);
 
 
 
