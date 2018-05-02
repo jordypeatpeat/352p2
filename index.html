@@ -17,6 +17,8 @@
     Track Number: <input type="text" id="pathNum">
     <button id="submit" onclick="EndTrackData();"> end track </button>
     <button id="submit" onclick="RetrieveTrack();"> load track </button>
+    <button id="submit" onclick="DrawTrack();"> display track </button>
+    <button id="submit" style="margin-left: 5%;" onclick="DeleteTrack();"> delete track </button>
     <div id="map"></div>
 
 
@@ -29,6 +31,7 @@
       var poly;
       var trackline;
       var i = 0;
+      var loadedTrack = [];
 
 
       function initMap() {
@@ -333,21 +336,7 @@
 
 // ****************  ******************  ****************** 
 
-// ****************  HARDCODED POLYLINE  ******************
-        // var flightPlanCoordinates = [
-        //   {lat: 37.772, lng: -122.214},
-        //   {lat: 21.291, lng: -157.821},
-        //   {lat: -18.142, lng: 178.431},
-        //   {lat: -27.467, lng: 153.027}
-        // ];
-        // var flightPath = new google.maps.Polyline({
-        //   path: flightPlanCoordinates,
-        //   geodesic: true,
-        //   strokeColor: '#FF0000',
-        //   strokeOpacity: 1.0,
-        //   strokeWeight: 2
-        // });
-// ****************  ******************  ****************** 
+
 
 
       function GeolocationControl(controlDiv, map) {
@@ -391,8 +380,6 @@
           // Browser doesn't support Geolocation
           handleLocationError(false, infoWindow, map.getCenter());
         }
-
-
       
       }
 
@@ -445,7 +432,6 @@
     var x;
     var rLat = [];
     var rLng = [];
-    var loadedTrack = [];
 
     // Grab the total amount of markers for that path
     database.ref('paths/path' + pathNum + "/total/total").once('value').then(function(snapshot) {
@@ -480,19 +466,68 @@
       }
       console.log(loadedTrack);
 
-      var displayLoadedTrack = new google.maps.Polyline({
-        path: loadedTrack,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-      });
 
-    }, 1500);
-
+      }, 1500);
 
 
   }
+
+
+// ****************  HARDCODED POLYLINE  ******************
+        // var flightPlanCoordinates = [
+        //   {lat: 37.772, lng: -122.214},
+        //   {lat: 21.291, lng: -157.821},
+        //   {lat: -18.142, lng: 178.431},
+        //   {lat: -27.467, lng: 153.027}
+        // ];
+        // var flightPath = new google.maps.Polyline({
+        //   path: flightPlanCoordinates,
+        //   geodesic: true,
+        //   strokeColor: '#FF0000',
+        //   strokeOpacity: 1.0,
+        //   strokeWeight: 2
+        // });
+// ****************  ******************  ****************** 
+
+
+function DrawTrack() {
+    console.log(loadedTrack.length);
+    if (loadedTrack.length != 0){
+      initMap();
+      var displayLoadedTrack = new google.maps.Polyline({
+          path: loadedTrack,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+      displayLoadedTrack.setMap(map); 
+      console.log("I should be displayed!");
+    }
+    else
+      alert("No track under this number exists!");
+}
+
+
+function DeleteTrack() {
+
+    var trackTest;
+    var pathNum = document.getElementById("pathNum").value;
+    
+    setTimeout(function(){
+      database.ref('paths/path' + pathNum).once('value').then(function(snapshot) {
+        trackTest= (snapshot.val());
+        console.log(trackTest + " Before");
+      });
+    }, 1500);
+
+    if(trackTest != null){
+      database.ref('paths/path' + pathNum).remove();
+      console.log(trackTest + " After");
+    }
+    else
+      alert("No track under this number to delete!");
+}
 
 
   // https://stackoverflow.com/questions/15148803/in-firebase-is-there-a-way-to-get-the-number-of-children-of-a-node-without-load
