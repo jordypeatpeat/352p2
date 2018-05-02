@@ -13,12 +13,38 @@
   </head>
   <body>
 
-    <button id="geo"><h1> Geolocate </h1></button>
-    Track Number: <input type="text" id="pathNum">
+    <button id="geo">    
+      <img id="logo" src="images/TrackerLogo_bBorder.png"></img>
+      <h1> Geolocate </h1>
+    </button>
+    <button id="help"> ? </button>
+
+    <b> Enable Editing? </b><input type="checkbox" id="editEnable" onclick="enableDisable();" unchecked>
+
+    <b> Track Number: </b> <input type="text" id="pathNum">
     <button id="submit" onclick="EndTrackData();"> end track </button>
     <button id="submit" onclick="RetrieveTrack();"> load track </button>
     <button id="submit" onclick="DrawTrack();"> display track </button>
     <button id="submit" style="margin-left: 5%;" onclick="DeleteTrack();"> delete track </button>
+    
+    <div id="myModal" class="modal">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h1> Create a Track </h1>
+        <p>1. Type in a track number</p>
+        <p>2. Click anywhere on the map to create a track
+        <p>3. When you're done, make sure to click 'end track'
+        <p><i>If you click using an existing track number it will be overwritten.</i>
+        <h1> Load a Track </h1>
+        <p>1. Type in a track number</p>
+        <p>2. Click 'load track', it will tell you if that track doesn't exist
+        <p>3. Once the track has loaded, click 'display track';
+      </div>
+
+    </div>
+
     <div id="map"></div>
 
 
@@ -295,9 +321,16 @@
         });
         poly.setMap(map); 
 
-        map.addListener('click', addLatLng); 
-
       }
+
+
+
+     function enableDisable() {
+        var canEdit = document.getElementById("editEnable");
+        console.log(canEdit);
+        if(canEdit.checked == true)
+          map.addListener('click', addLatLng); 
+     } 
 
 // ****************  CLICKING POLYLINE  ******************
 
@@ -438,9 +471,15 @@
         totalMarkers = (snapshot.val());
         console.log("Total markers retrieved: " + totalMarkers);
     });
+
+
     
     // Little delay so that the above info can be ready for this
     setTimeout(function(){
+           if (totalMarkers == null || totalMarkers == 0){
+            alert("This track number doesn't exist!");
+            return;
+          }     
           // Append each marker's lat and lng to their arrays
           for (x=1; x < totalMarkers+1; x++){
             console.log("Marker " + x);
@@ -465,7 +504,10 @@
         loadedTrack[x] = {lat: rLat[x], lng: rLng[x]};
       }
       console.log(loadedTrack);
-
+      
+      if (totalMarkers > 0){
+        alert("Track loaded!");
+      }     
 
       }, 1500);
 
@@ -513,7 +555,7 @@ function DeleteTrack() {
 
     var trackTest;
     var pathNum = document.getElementById("pathNum").value;
-    
+
     setTimeout(function(){
       database.ref('paths/path' + pathNum).once('value').then(function(snapshot) {
         trackTest= (snapshot.val());
@@ -537,11 +579,35 @@ function DeleteTrack() {
 
 
 
+// **********************. MODAL .*************************
 
+// Get the modal
+var modal = document.getElementById('myModal');
 
+// Get the button that opens the modal
+var btn = document.getElementById("help");
 
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
 
+// When the user clicks on the button, open the modal 
+btn.onclick = function() {
+    modal.style.display = "block";
+}
 
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+// **********************. ******** .*************************
 
 
 
